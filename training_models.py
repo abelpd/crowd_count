@@ -254,3 +254,39 @@ class models_to_train:
         model.add(BatchNormalization())
         model.add(Dense(1))
         return model
+
+
+
+class automated_model_building:
+# function to build a convolutional model automatically
+    def model_builder(IMG_SIZE, IMG_SIZE2, model_params):
+
+        model = Sequential()
+        act = LeakyReLU()
+
+        model.add(Lambda(lambda x: x/127.5-1.0, input_shape=(IMG_SIZE, IMG_SIZE2,1)))
+
+        model.add(Conv2D(filters=96,  kernel_size=(11,11), strides=(4,4), padding='valid'))
+        model.add(act)
+        model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='valid'))
+
+        for layer in range(0, len(model_params)):
+            model.add(automated_model_building.add_conv_layer(model_params[layer][0], model_params[layer][1], model_params[layer][2], 'valid'))
+            model.add(act)
+            model.add(Dropout(0.5))
+            model.add(automated_model_building.add_pooling_layer(pool_size=(2,2), strides=(3,3), padding='same'))
+
+        model.add(Flatten())
+        model.add(Dense(2000,activation='relu'))
+        model.add(Dense(1000,activation='relu'))
+        model.add(Dense(1))
+
+        return model
+
+    def add_conv_layer(filter, kernel_size, strides, padding):
+        cov_layer = Conv2D(filters=filter, kernel_size=kernel_size, strides=strides, padding='same')
+        return cov_layer
+
+    def add_pooling_layer(pool_size, strides, padding):
+        pool_layer = MaxPooling2D(pool_size=pool_size, strides=strides, padding=padding)
+        return pool_layer
